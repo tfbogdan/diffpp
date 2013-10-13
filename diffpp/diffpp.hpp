@@ -25,7 +25,6 @@
 #ifndef DIFFPP_HPP_INCLUDED
 #define DIFFPP_HPP_INCLUDED
 
-/*
-*/
+#include "script.hpp"
 
 #endif //DIFFPP_HPP_INCLUDED
