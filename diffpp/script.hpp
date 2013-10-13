@@ -29,6 +29,7 @@
 #include <list>
 #include <map>
 #include <iterator>
+#include <functional>
 #include <cstdlib>
 #include <cassert> 
 
@@ -58,19 +59,19 @@ namespace diffpp {
 		
 		namespace detail { 
 
-			typedef std::map< int, int > k_path_map;
-			typedef std::vector< k_path_map > path_maps_t;
+			typedef std::map< int, int > kdmap_t;
+			typedef std::vector< kdmap_t > kdmap_container_t;
 
 			struct longestpath_fordistance_fwd { 
-				template < typename fwdItA, typename fwdItB > inline
-				static bool exec ( const fwdItA A0, const fwdItB B0, const int sizeA, const int sizeB, k_path_map &kmap, const int distance ) {
+				template < typename fwdItA, typename fwdItB, typename predicate > inline
+				static bool exec ( const fwdItA A0, const fwdItB B0, const int sizeA, const int sizeB, kdmap_t &kdmap, const int distance, predicate eq ) {
 					const int inv_dist = distance * -1; 
 					for ( int kline = inv_dist; kline <= distance; kline += 2 ) {
-						bool down = ( inv_dist == kline || ( kline != distance && kmap[kline-1] < kmap[kline+1] ) );
+						bool down = ( inv_dist == kline || ( kline != distance && kdmap[kline-1] < kdmap[kline+1] ) );
 						
 						int prev_kline = kline + ( down ? 1 : -1 );
 
-						point start; start.x = kmap[prev_kline];
+						point start; start.x = kdmap[prev_kline];
 						start.y = start.x - prev_kline;
 
 						point end; end.x = start.x + ( down ? 0 : 1 );	
@@ -80,13 +81,13 @@ namespace diffpp {
 						std::advance( itA, end.x );
 						std::advance( itB, end.y );
 
-						while ( end.x < sizeA && end.y < sizeB && *itA == *itB ) { 
+						while ( end.x < sizeA && end.y < sizeB && eq(*itA, *itB) ) { 
 							++end.x;
 							++end.y;
 							++itA; ++itB;
 						}
 
-						kmap[kline] = end.x;
+						kdmap[kline] = end.x;
 
 						if ( end.x >= sizeA && end.y >= sizeB ) return true; // solution found
 					}
@@ -95,17 +96,17 @@ namespace diffpp {
 			};
 
 			struct longestpath_fordistance_bwd { 
-				template < typename fwdItA, typename fwdItB > inline
-				static bool exec ( const fwdItA A0, const fwdItB B0, const int sizeA, const int sizeB, k_path_map &kmap, int distance ) {
+				template < typename fwdItA, typename fwdItB, typename predicate  > inline
+				static bool exec ( const fwdItA A0, const fwdItB B0, const int sizeA, const int sizeB, kdmap_t &kdmap, int distance, predicate eq ) {
 					const int delta = sizeA - sizeB;
 					const int inv_dist = distance * -1;
 
 					for ( int kline = inv_dist + delta; kline <= distance + delta; kline += 2 ) {
-						bool up = ( kline == distance + delta || ( kline != (inv_dist + delta) && kmap[kline-1] < kmap[kline+1] ) );
+						bool up = ( kline == distance + delta || ( kline != (inv_dist + delta) && kdmap[kline-1] < kdmap[kline+1] ) );
 						
 						const int prev_kline = kline + ( up ? -1 : 1 );
 
-						point start;start.x = kmap[ prev_kline ];
+						point start;start.x = kdmap[ prev_kline ];
 						start.y = start.x - prev_kline;
 
 						point end; end.x = up ? start.x : start.x - 1;
@@ -116,13 +117,13 @@ namespace diffpp {
 						std::advance(itA, end.x-1);
 						std::advance(itB, end.y-1);
 						
-						while ( end.x > 0 && end.y > 0 && *itA==*itB ) {
+						while ( end.x > 0 && end.y > 0 && eq(*itA, *itB) ) {
 							--end.x;
 							--end.y;
 							--itA;--itB;
 						}
 
-						kmap[kline] = end.x;
+						kdmap[kline] = end.x;
 
 						if ( end.x <= 0 && end.y <= 0 ) return true;
 					}
@@ -132,24 +133,23 @@ namespace diffpp {
 
 			struct solver_greedyfwd {
 				template < typename container_t > 
-				static void solve ( path_maps_t &kdmaps, container_t &sln, const int sizeA, const int sizeB ) {
+				static void solve ( kdmap_container_t &kdmaps, container_t &sln, const int sizeA, const int sizeB ) {
 					point current( sizeA, sizeB );
 					for ( int distance = ( kdmaps.size()-1); current.x > 0 || current.y > 0; --distance ) {
-						k_path_map &kmap( kdmaps[distance] );
+						kdmap_t &kdmap( kdmaps[distance] );
 						const int inv_dist(distance * -1);
 						const int kline = current.x - current.y;
 						
-						point end; end.x = kmap[kline];
+						point end; end.x = kdmap[kline];
 						end.y = end.x - kline; 
 
-						bool down = ( inv_dist == kline || ( kline != distance && kmap[kline-1] < kmap[kline+1] ) );
+						bool down = ( inv_dist == kline || ( kline != distance && kdmap[kline-1] < kdmap[kline+1] ) );
 
 						int prev_kline = kline + ( down ? 1 : -1 );
 
-						point start; start.x = kmap[prev_kline];
+						point start; start.x = kdmap[prev_kline];
 						start.y = start.x - prev_kline;
 
-						//sln.push_back( edit(start, end) );	
 						sln.insert( sln.begin(), 1, edit(start, end) );
 						
 						current = start;
@@ -159,25 +159,24 @@ namespace diffpp {
 
 			struct solver_greedybwd {
 				template < typename container_t > 
-				static void solve ( path_maps_t &kdmaps, container_t &sln, const int sizeA, const int sizeB ) {
+				static void solve ( kdmap_container_t &kdmaps, container_t &sln, const int sizeA, const int sizeB ) {
 					point current(0,0);
 					const int delta = sizeA-sizeB;
 					
           for ( int distance = kdmaps.size() -1; current.x < sizeA || current.y < sizeB; --distance ) {
-						k_path_map &kmap( kdmaps[distance] );
+						kdmap_t &kdmap( kdmaps[distance] );
             const int kline = current.x - current.y;
 						const int inv_dist = distance * -1;
 
-						point end; end.x = kmap[kline];
+						point end; end.x = kdmap[kline];
 						end.y = end.x - kline;
 
-						bool up = ( kline == distance + delta || ( kline != (inv_dist + delta) && kmap[kline-1] < kmap[kline+1] ) );
+						bool up = ( kline == distance + delta || ( kline != (inv_dist + delta) && kdmap[kline-1] < kdmap[kline+1] ) );
 						const int prev_kline = kline - ( up ? 1 : -1 );
 
-						point start; start.x = kmap[prev_kline];
+						point start; start.x = kdmap[prev_kline];
 						start.y = start.x - prev_kline;
 						
-						//sln.push_back( edit(start, end) );
 						sln.insert( sln.end(), 1, edit(start, end) );
 
 						current = start;
@@ -186,15 +185,15 @@ namespace diffpp {
 				}
 			};
 
-			template < typename calc_longestpath, typename calc_solutionfct, typename fwdItA, typename fwdItB, typename container_t  > inline
-			void diff_greedy ( fwdItA A0, fwdItB B0, container_t &solution_out, k_path_map &kmap, const int sizeA, const int sizeB ) { 
-				path_maps_t path_maps;
+			template < typename calc_longestpath, typename calc_solutionfct, typename fwdItA, typename fwdItB, typename container_t, typename predicate > inline
+			void diff_greedy ( fwdItA A0, fwdItB B0, container_t &solution_out, kdmap_t &kdmap, const int sizeA, const int sizeB, predicate eq ) { 
+				kdmap_container_t path_maps;
 				bool solution_found = false;
 				const int worst_case = sizeA + sizeB;
 
 				for ( int distance(0); distance <= worst_case; ++distance ) {
-					solution_found = calc_longestpath::exec(A0, B0, sizeA, sizeB, kmap, distance);
-					path_maps.push_back(kmap);
+					solution_found = calc_longestpath::exec(A0, B0, sizeA, sizeB, kdmap, distance, eq );
+					path_maps.push_back(kdmap);
 					if ( solution_found ) break;
 				}
 
@@ -204,24 +203,24 @@ namespace diffpp {
 			}
 		}
 
-		template < typename fwdItA, typename fwdItB, typename container_t > inline
-		void diff_greedyfwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln ) {
+		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
+		void diff_greedyfwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
 			static const int sizeA = std::distance( A0, An );
 			static const int sizeB = std::distance( B0, Bm );
-			detail::k_path_map kmap;
-			kmap[1] = 0;
+			detail::kdmap_t kdmap;
+			kdmap[1] = 0;
 			detail::diff_greedy<detail::longestpath_fordistance_fwd,
-								detail::solver_greedyfwd> ( A0, B0, sln, kmap, sizeA, sizeB );		
+								detail::solver_greedyfwd> ( A0, B0, sln, kdmap, sizeA, sizeB, eq );		
 		}
 
-		template < typename fwdItA, typename fwdItB, typename container_t > inline
-		void diff_greedybwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln ) {
+		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
+		void diff_greedybwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
 			static const int sizeA = std::distance( A0, An );
 			static const int sizeB = std::distance( B0, Bm );
-			detail::k_path_map kmap;
-			kmap[ sizeA - sizeB - 1 ] = sizeA;
+			detail::kdmap_t kdmap;
+			kdmap[ sizeA - sizeB - 1 ] = sizeA;
 			detail::diff_greedy<detail::longestpath_fordistance_bwd,
-								detail::solver_greedybwd> ( A0, B0, sln, kmap, sizeA, sizeB );		
+								detail::solver_greedybwd> ( A0, B0, sln, kdmap, sizeA, sizeB, eq );		
 		}
 
 	}	//::diff::algorithms
