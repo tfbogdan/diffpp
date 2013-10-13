@@ -50,6 +50,7 @@ namespace diffpp {
 		unsigned get_matches  (void) const { return std::abs( get_command() == DELETE ? start.y - end.y : start.x - end.x ); }
 		command_t get_command (void) const { return std::abs( end.x - start.x ) > std::abs( end.y - start.y ) ? DELETE : INSERT; }	
 		int get_direction			(void) const { return end.x > start.x || end.y > start.y ? 1 : -1; }
+		int get_differences		(void) const { return get_matches() +  1; }
 	private:
 		point start;	
 		point end;
@@ -196,6 +197,60 @@ namespace diffpp {
 					solve_dir::solve( path_maps, solution_out, sizeA, sizeB );
 				
 			}
+
+			template < typename fwdItA, typename fwdItB > inline 
+			edit find_middle_edit ( fwdItA A0, fwdItB B0, const int sizeA, const int sizeB, kdmap_t &kdmapfwd, kdmap_t &kdmapbwd ) {
+				const int worst_case = sizeA + sizeB;
+				const int delta = sizeA - sizeB;
+
+				for ( int distance(0); distance <= (worst_case+1)/2; ++distance ) {
+					const int inv_dist = distance * (-1); 
+					
+					for ( int kline(inv_dist); kline<=distance; kline+=2 ) {
+						if ( delta%2==0 && (kline>=delta-(distance-1) && kline<=delta+(distance-1)) ) {
+						}
+					}
+
+					for ( int kline(inv_dist); kline<=distance; kline+=2 ) {
+					}
+					
+				}
+				return edit();
+			}
+			template < typename fwdItA, typename fwdItB, typename container_t, typename predicate > inline 
+			void diff_linear ( const fwdItA A0, const int sizeA, const fwdItB B0, const int sizeB,container_t &sln, predicate eq, kdmap_t &kdmapfwd, kdmap_t &kdmapbwd ) {
+				if ( sizeB==0 && sizeA>0 ) {;} // edge case
+				if ( sizeA==0 && sizeB>0 ) {;} // edge case
+				if ( sizeA==0 || sizeB==0 ) return; // something is really going bad
+				
+				edit middle_edit = find_middle_edit(A0, B0, sizeA, sizeB, kdmapfwd, kdmapbwd );
+				const int edits = middle_edit.get_differences();
+
+				if ( edits > 1 ) {
+					const int xs = middle_edit.get_start().x;
+					const int ys = middle_edit.get_start().y;
+					const int xe = middle_edit.get_end().x;
+					const int ye = middle_edit.get_end().y;
+
+					fwdItA itA(A0);
+					fwdItB itB(B0);
+					std::advance(itA, xs);
+					std::advance(itB, ys);
+
+					diff_linear(itA, xs, itB, ys, sln, eq, kdmapfwd, kdmapbwd);
+
+					itA=A0;
+					itB=B0;
+					std::advance(itA, xe);
+					std::advance(itB, ye);
+					diff_linear(itA, xe, itB, ye, sln, eq, kdmapfwd, kdmapbwd);
+				} else if ( edits == 1 ) {
+
+				} else if ( edits == 0 ) { 
+				
+				}
+
+			}
 		}
 
 		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
@@ -218,6 +273,22 @@ namespace diffpp {
 								detail::solver_greedybwd> ( A0, B0, sln, kdmap, sizeA, sizeB, eq, false );		
 		}
 
+		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
+		void diff_linear ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
+// this function is a stube
+			static const int sizeA = std::distance( A0, An );
+			static const int sizeB = std::distance( B0, Bm );
+
+			detail::kdmap_t kdmapfwd;kdmapfwd[1]=0;
+			detail::kdmap_t kdmapbwd;kdmapbwd[ sizeA - sizeB - 1 ] = sizeA;
+			
+			detail::diff_linear(A0,sizeA,B0,sizeB,sln,eq,kdmapfwd,kdmapbwd);	
+		}
+
+		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
+		void diff ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
+			diff_greedyfwd(A0,An,B0,Bm,sln,eq);	
+		}
 	}	//::diff::algorithms
 
 } // ::diffpp
