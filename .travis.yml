@@ -7,6 +7,7 @@ before_script: cd ../diffpp/
 script: 
  doxygen doxygen.cfg 
  cd ../diffpp_doc
+ git push https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git --branch gh-pages
  ls -l
 after_success:  
 after_failure: 
