@@ -4,12 +4,12 @@ before_install:
  rm -rf ../diffpp_doc
  mkdir ../diffpp_doc
  cd ../diffpp_doc
-install: git pull https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git --branch gh-pages . 
+install: git pull https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git gh-pages 
 before_script: cd ../diffpp/
 script: 
  doxygen doxygen.cfg 
  cd ../diffpp_doc
- git push https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git --branch gh-pages
+ git push https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git gh-pages
  ls -l
 after_success:  
 after_failure: 
