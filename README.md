@@ -22,3 +22,6 @@ standard c++ library
 
 
 if you have a question or a suggestion, or maybe just want to let me know that you found this library useful, find me at tfbogdan@windowslive.com
+
+
+<a href="https://travis-ci.org/tfbogdan/diffpp"><img src="https://secure.travis-ci.org/tfbogdan/diffpp.png?branch=master"/></a>
