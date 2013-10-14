@@ -22,8 +22,8 @@
 *  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 *  
 */ 
-#ifndef SCRIPT_HPP_INCLUDED
-#define SCRIPT_HPP_INCLUDED
+#ifndef ALGORITHM_HPP_INCLUDED
+#define ALGORITHM_HPP_INCLUDED
 
 #include <list>
 #include <map>
@@ -292,4 +292,4 @@ namespace diffpp {
 
 } // ::diffpp
 
-#endif //SCRIPT_HPP_INCLUDED
+#endif // ALGORITHM_HPP_INCLUDED
