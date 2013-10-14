@@ -1,5 +1,8 @@
 language: cpp
-compiler: 
-	- gcc
-	- clang
-script: ./configure && make
+before_install: mkdir ../diffpp_doc & cd ../diffpp_doc/
+install: git clone https://github.com/tfbogdan/diffpp.git --branch gh-pages . 
+before_script: cd ../diffpp/
+script: doxygen doxygen.cfg & cd ../diffpp_doc/ & git push origin gh-pages
+after_success:  
+after_failure: 
+after_script: 

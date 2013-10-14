@@ -251,7 +251,11 @@ namespace diffpp {
 
 			}
 		}
-
+		
+		/// computes the difference between range A [A0,An) and range B [B0, Bm), expressed as the shortest edit script for turning range a to range b
+		/// @param[in] A0, An, B0, Bm ranges to be diffed
+		///	@param[out] sln container which will store the solution
+		/// @param[in] eq predicate function used to compare the elements. defaults to std::equal_to
 		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
 		void diff_greedyfwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
 			static const int sizeA = std::distance( A0, An );
