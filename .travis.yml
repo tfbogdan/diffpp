@@ -1,5 +1,7 @@
 language: cpp
 before_install: 
+ rm -rf ../diffpp_doc/*
+ rm -rf ../diffpp_doc
  mkdir ../diffpp_doc
  cd ../diffpp_doc
 install: git pull https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git --branch gh-pages . 
