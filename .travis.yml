@@ -1,8 +1,13 @@
 language: cpp
-before_install: mkdir ../diffpp_doc & cd ../diffpp_doc/
+before_install: 
+ -mkdir ../diffpp_doc
+ -cd ../diffpp_doc
 install: git pull https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git --branch gh-pages . 
 before_script: cd ../diffpp/
-script: doxygen doxygen.cfg & cd ../diffpp_doc/ & ls -l
+script: 
+ -doxygen doxygen.cfg 
+ -cd ../diffpp_doc
+ -ls -l
 after_success:  
 after_failure: 
 after_script: 
