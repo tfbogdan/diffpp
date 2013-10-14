@@ -1,0 +1,5 @@
+tst/*
+!tst/diffpp_test/
+!tst/diffpp_test/main.cpp
+html/*
+doc/*
