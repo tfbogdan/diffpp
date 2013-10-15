@@ -258,8 +258,8 @@ namespace diffpp {
 		/// @param[in] eq predicate function used to compare the elements. defaults to std::equal_to
 		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
 		void diff_greedyfwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
-			static const int sizeA = std::distance( A0, An );
-			static const int sizeB = std::distance( B0, Bm );
+			const int sizeA = std::distance( A0, An );
+			const int sizeB = std::distance( B0, Bm );
 			detail::kdmap_t kdmap;
 			kdmap[1] = 0;
 			detail::diff_greedy<detail::search_forward,
@@ -268,8 +268,8 @@ namespace diffpp {
 
 		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
 		void diff_greedybwd ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
-			static const int sizeA = std::distance( A0, An );
-			static const int sizeB = std::distance( B0, Bm );
+			const int sizeA = std::distance( A0, An );
+			const int sizeB = std::distance( B0, Bm );
 			detail::kdmap_t kdmap;
 			kdmap[ sizeA - sizeB - 1 ] = sizeA;
 			detail::diff_greedy<detail::search_backward,
@@ -279,8 +279,8 @@ namespace diffpp {
 		template < typename fwdItA, typename fwdItB, typename container_t, typename predicate=std::equal_to<const typename fwdItA::reference > > inline
 		void diff_linear ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, container_t &sln, predicate eq = predicate() ) {
 // this function is a stube
-			static const int sizeA = std::distance( A0, An );
-			static const int sizeB = std::distance( B0, Bm );
+			const int sizeA = std::distance( A0, An );
+			const int sizeB = std::distance( B0, Bm );
 
 			detail::kdmap_t kdmapfwd;kdmapfwd[1]=0;
 			detail::kdmap_t kdmapbwd;kdmapbwd[ sizeA - sizeB - 1 ] = sizeA;
