@@ -44,6 +44,7 @@ namespace diffpp {
 		typedef enum { INSERT, DELETE } command_t;
 
 		edit ( const point &Start, const point &End ) : start(Start), end(End) {}
+		edit (void) {}
 		const point &get_start(void) const { return start; }
 		const point &get_end  (void) const { return end; }
 		unsigned get_matches  (void) const { return std::abs( get_command() == DELETE ? start.y - end.y : start.x - end.x ); }
@@ -61,6 +62,73 @@ namespace diffpp {
 
 			typedef std::map< int, int > kdmap_t;
 			typedef std::vector< kdmap_t > kdmap_container_t;
+
+
+
+			struct iterator_accessor { // experimental elacc_policy ( element access policy )
+				template < typename iter >
+				static void advance ( iter &it, int step ) { 
+					std::advance(it, step);
+				}
+				template < typename iter > 
+				auto dereference( iter it ) -> typename iter::reference { // temporary. will only work with c++11
+					return *it;
+				}
+			};
+			template < typename T >
+			T flip_sign(T t) { 
+				return t ^ ( 1<<( ( sizeof(t) * 8 ) -1);	
+			}
+
+			template < typename direction_policy, typename elacc_policy > 
+			struct distance_seeker { 
+					
+				template < typename iterA, typename iterB, typename predicate >
+				distance_seeker ( iterA A0, 
+													const int countA, 
+													iterB B0, 
+													const int countB, 
+													const int kline, 
+													const int distance, 
+													const int dist_lower_k,
+													const int dist_upper_k,
+													predicate eq  ) { // some stuff might throw. has to be moved away from ctor
+													// this hasn't been tested. not even compiled 
+					direction = direction_policy::direction( 
+								kline, 
+								distance, 
+								dist_lower_k,
+							  dist_upper_k );
+
+					prev_kline = kline + flip_sign(direction);
+					xend = kdistance_policy::dist_for_k(prev_kline);
+					xend += direction == direction_policy::seek_direction? 1: 0;
+
+					yend = xend - kline;
+
+					elacc_policy::advance(A0, xend);
+					elacc_policy::advance(B0, yend);
+
+					while ( xend < countA && yend < countB && eq ( 
+														elacc_policy::dereference( A0 ), 
+														elacc_policy::dereference( B0 ) ) ) { 
+						xelem += direction_policy::seek_direction;
+						yelem += direction_polict::seek_direction;
+						elacc_policy::advance(A0, direction_policy::seek_direction);
+						elacc_policy::advance(B0, direction_policy::seek_direction);
+					}
+					return xend;
+				}
+
+				int get_xend( void ) const { return xend; }
+				int get_yend( void ) const { return yend; }
+				int get_direction( void ) const { return direction; }
+				int get_prevk( void ) const { return prev_kline; }
+			private:
+				int xend, yend;
+				int direction;
+				int prev_kline;
+			};
 
 			struct search_forward { 
 				template < typename fwdItA, typename fwdItB, typename predicate > inline

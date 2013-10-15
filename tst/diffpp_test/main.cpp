@@ -81,13 +81,16 @@ int main() {
 
     sln_t sln;
     sln_t slnb;
+		sln_t slnsl;
 
     auto pred = [](const char &a, const char &b) { return a == b; };
     diffpp::algorithms::diff_greedyfwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), sln, pred);
     diffpp::algorithms::diff_greedybwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnb, pred );
+		diffpp::algorithms::diff_linear(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnsl, pred );
 
     print_diff_merge(sln);
     print_diff_merge(slnb);
+		print_diff_merge(slnsl);
 
     return 0;
 }
