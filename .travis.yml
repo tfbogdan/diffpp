@@ -14,8 +14,15 @@ install: make
 before_script: 
 script: release/test
 after_success:
+- sudo apt-get install doxygen
 - cd ../..
 - mkdir -p ../diffpp_doc
 - doxygen doxygen.cfg
+- cd ../diffpp_doc
+- git remote set-url --push origin https://github.com/tfbogdan/diffpp.git
+- git remote set-branches --add origin gh-pages
+- git fetch -q
+- git config user.name $GNAME
+- git config user.email $GEMAIL
 after_failure: 
 after_script: 
