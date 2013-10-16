@@ -17,12 +17,16 @@ after_success:
 - sudo apt-get install doxygen
 - cd ../..
 - mkdir -p ../diffpp_doc
-- doxygen doxygen.cfg
 - cd ../diffpp_doc
 - git remote set-url --push origin https://github.com/tfbogdan/diffpp.git
 - git remote set-branches --add origin gh-pages
 - git fetch -q
-- git config user.name $GNAME
-- git config user.email $GEMAIL
+- git config user.name ${GNAME}
+- git config user.email ${GEMAIL}
+- git clone https://github.com/tfbogdan/diffpp --branch gh-pages .
+- doxygen ../diffpp/doxygen.cfg
+- git add *
+- git commit -m 'documentation update triggered by succesful build'
+- git push https://tfbogdan:${GTOKEN}@github.com/tfbogdan/diffpp.git
 after_failure: 
 after_script: 
