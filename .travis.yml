@@ -1,14 +1,21 @@
 language: cpp
-before_install: 
-  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq libboost1.48-dev libboost-test1.48-dev libyajl-dev libxml2-dev libxqilla-dev
-  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-  - cd tst/diffpp_test
+env:
+  global:
+  - secure: J/7x8gjamWxKIP2hH7u3r/WqT36XRv60bVSr6ZtAaaD832GhpA/rJ9iVtljDbJiLrwbKHcFhMwaM7u0mRuh6pLHB4vDahN6K26J2b8Ty2jdlPHMjPqw4h3o/4TvUsFPHkGFo5uEILPbJnuhepYt9EDsojRmMjE0ASEivxH1Jr5E=
+before_install:
+- sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+- sudo apt-get update -qq
+- sudo apt-get install -qq libboost1.48-dev libboost-test1.48-dev libyajl-dev libxml2-dev
+  libxqilla-dev
+- if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+- if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+- cd tst/diffpp_test
 install: make
-before_script:
+before_script: 
 script: release/test
-after_success:  
+after_success:
+- cd ../..
+- mkdir -p ../diffpp_doc
+- doxygen doxygen.cfg
 after_failure: 
 after_script: 
