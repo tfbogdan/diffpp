@@ -11,6 +11,5 @@ var searchData=
   ['diff_5flinear',['diff_linear',['../namespacediffpp_1_1algorithms_1_1detail.html#ae2de22b201c2db8df4c3603fedd1c843',1,'diffpp::algorithms::detail::diff_linear()'],['../namespacediffpp_1_1algorithms.html#a853f6d2022080822bc56f5c974866fcb',1,'diffpp::algorithms::diff_linear()']]],
   ['diffpp',['diffpp',['../namespacediffpp.html',1,'']]],
   ['diffpp_2ehpp',['diffpp.hpp',['../diffpp_8hpp.html',1,'']]],
-  ['distance_5fseeker',['distance_seeker',['../structdiffpp_1_1algorithms_1_1detail_1_1distance__seeker.html#ae46fe912fef04f8a2fac65fa3c418e2f',1,'diffpp::algorithms::detail::distance_seeker']]],
   ['distance_5fseeker',['distance_seeker',['../structdiffpp_1_1algorithms_1_1detail_1_1distance__seeker.html',1,'diffpp::algorithms::detail']]]
 ];
