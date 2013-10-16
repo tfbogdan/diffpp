@@ -19,15 +19,15 @@ clean_debug:
 	rm -f debug/*.o
 	rm -f debug/test
 main.o: 
+	mkdir -p release
 	$(CC) $(CFLAGS_RELEASE) main.cpp -o release/main.o
 
 main.o.dbg:
 	$(CC) $(CFLAGS_DEBUG) main.cpp -o debug/main.o
 
 test.out:
-	mkdir -p release
+	mkdir -p debug
 	$(CC) release/main.o -o release/test 
 
 test.out.dbg:
-	mkdir -p debug
 	$(CC) debug/main.o -o debug/test 
