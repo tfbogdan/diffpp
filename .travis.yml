@@ -1,21 +1,8 @@
 language: cpp
 before_install: 
- rm -rf ../diffpp_doc/*
- rm -rf ../diffpp_doc
- mkdir ../diffpp_doc
- cd ../diffpp_doc
 install: 
-before_script: 
-script: 
- git init
- git config user.email 'tfbogdan@windowslive.com'
- git config user.name 'tfbogdan'
- git pull https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git gh-pages 
- cd ../diffpp/
- doxygen doxygen.cfg 
- cd ../diffpp_doc
- git push https://SAaBe2tL2zeqSNDj3WWP@github.com/tfbogdan/diffpp.git gh-pages
- ls -l
+before_script: cd tst/diffpp_test
+script: make && release/test
 after_success:  
 after_failure: 
 after_script: 

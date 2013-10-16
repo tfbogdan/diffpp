@@ -8,10 +8,9 @@
 
 #include <diffpp/diffpp.hpp>
 
-std::string leftstr="ABCABBA";
-std::string rightstr="CBABAC";
 
-template < typename container_t > inline void print_diff_merge( const container_t &sln ) {
+template < typename container_t, typename range_a, typename range_b > 
+inline std::string print_diff_merge( const container_t &sln, const range_a &leftstr, const range_b &rightstr ) {
     std::string merged;
     for ( auto iter(sln.begin()); iter != sln.end(); ++iter ) {
         diffpp::point start = iter->get_start();
@@ -71,26 +70,24 @@ template < typename container_t > inline void print_diff_merge( const container_
 
     std::cout << "merge of:" << std::endl << "\t\"" << leftstr << "\"" << std::endl << "with:" << std::endl << "\t" << "\"" << rightstr << "\"" <<
                  std::endl << "results:" << std::endl << "\t\t\"" << merged << "\"" << std::endl;
+		return merged;
 }
 
 int main() {
 
     typedef std::vector< diffpp::edit > sln_t;
-    std::cout<< "strA=";std::cin>>leftstr;
-    std::cout<< "strB=";std::cin>>rightstr;
+		std::string leftstr="ABCABBA";
+		std::string rightstr="CBABAC";
 
     sln_t sln;
     sln_t slnb;
-		sln_t slnsl;
 
     auto pred = [](const char &a, const char &b) { return a == b; };
     diffpp::algorithms::diff_greedyfwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), sln, pred);
     diffpp::algorithms::diff_greedybwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnb, pred );
-		diffpp::algorithms::diff_linear(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnsl, pred );
 
-    print_diff_merge(sln);
-    print_diff_merge(slnb);
-		print_diff_merge(slnsl);
+    if ( print_diff_merge(sln, leftstr, rightstr) != "ABCBABBAC" ) return -1;
+    if ( print_diff_merge(slnb,leftstr, rightstr) != "CABCABBAC" ) return -1;
 
     return 0;
 }

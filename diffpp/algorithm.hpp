@@ -75,16 +75,12 @@ namespace diffpp {
 					return *it;
 				}
 			};
-			template < typename T >
-			T flip_sign(T t) { 
-				return t ^ ( 1<<( ( sizeof(t) * 8 ) -1);	
-			}
 
 			template < typename direction_policy, typename elacc_policy > 
 			struct distance_seeker { 
 					
 				template < typename iterA, typename iterB, typename predicate >
-				distance_seeker ( iterA A0, 
+				int operator () ( iterA A0, 
 													const int countA, 
 													iterB B0, 
 													const int countB, 
@@ -100,8 +96,8 @@ namespace diffpp {
 								dist_lower_k,
 							  dist_upper_k );
 
-					prev_kline = kline + flip_sign(direction);
-					xend = kdistance_policy::dist_for_k(prev_kline);
+					prev_kline = kline + direction * -1;
+					xend = prev_kline < kline ? dist_lower_k: dist_upper_k;
 					xend += direction == direction_policy::seek_direction? 1: 0;
 
 					yend = xend - kline;
@@ -112,8 +108,8 @@ namespace diffpp {
 					while ( xend < countA && yend < countB && eq ( 
 														elacc_policy::dereference( A0 ), 
 														elacc_policy::dereference( B0 ) ) ) { 
-						xelem += direction_policy::seek_direction;
-						yelem += direction_polict::seek_direction;
+						xend += direction_policy::seek_direction;
+						yend += direction_policy::seek_direction;
 						elacc_policy::advance(A0, direction_policy::seek_direction);
 						elacc_policy::advance(B0, direction_policy::seek_direction);
 					}
