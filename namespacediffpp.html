@@ -84,7 +84,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
-<a href="#nested-classes">Classes</a>  </div>
+<a href="#nested-classes">Classes</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">diffpp Namespace Reference</div>  </div>
 </div><!--header-->
@@ -101,6 +102,17 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdiffpp_1_1edit.html">edit</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a6c09b7e00aa9fa2763d29fd6da485aae"><td class="memTemplParams" colspan="2">template&lt;typename fwdItA , typename fwdItB , typename predicate  = std::equal_to&lt;const typename fwdItA::reference &gt;&gt; </td></tr>
+<tr class="memitem:a6c09b7e00aa9fa2763d29fd6da485aae"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacediffpp.html#a6c09b7e00aa9fa2763d29fd6da485aae">difference</a> (fwdItA A0, fwdItB B0, const int sizeA, const int sizeB, predicate eq=predicate())</td></tr>
+<tr class="memdesc:a6c09b7e00aa9fa2763d29fd6da485aae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the difference between a range A and a range B. The difference between two ranges A and B represents the number of changes we need to make to the range A in order to transform it into B's equivalent.  <a href="#a6c09b7e00aa9fa2763d29fd6da485aae">More...</a><br/></td></tr>
+<tr class="separator:a6c09b7e00aa9fa2763d29fd6da485aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87124e1ed63cceefb3aff4988ff8d9c6"><td class="memTemplParams" colspan="2">template&lt;typename fwdItA , typename fwdItB , typename predicate  = std::equal_to&lt; const typename fwdItA::reference &gt;&gt; </td></tr>
+<tr class="memitem:a87124e1ed63cceefb3aff4988ff8d9c6"><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacediffpp.html#a87124e1ed63cceefb3aff4988ff8d9c6">difference</a> (fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, predicate eq=predicate())</td></tr>
+<tr class="memdesc:a87124e1ed63cceefb3aff4988ff8d9c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the difference between a range A and a range B. The difference between two ranges A and B represents the number of changes we need to make to the range A in order to transform it into B's equivalent.  <a href="#a87124e1ed63cceefb3aff4988ff8d9c6">More...</a><br/></td></tr>
+<tr class="separator:a87124e1ed63cceefb3aff4988ff8d9c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The MIT License (MIT)</p>
@@ -108,10 +120,138 @@ Classes</h2></td></tr>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. </p>
-</div></div><!-- contents -->
+</div><h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a6c09b7e00aa9fa2763d29fd6da485aae"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename fwdItA , typename fwdItB , typename predicate  = std::equal_to&lt;const typename fwdItA::reference &gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int diffpp::difference </td>
+          <td>(</td>
+          <td class="paramtype">fwdItA&#160;</td>
+          <td class="paramname"><em>A0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">fwdItB&#160;</td>
+          <td class="paramname"><em>B0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>sizeA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const int&#160;</td>
+          <td class="paramname"><em>sizeB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">predicate&#160;</td>
+          <td class="paramname"><em>eq</em> = <code>predicate()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the difference between a range A and a range B. The difference between two ranges A and B represents the number of changes we need to make to the range A in order to transform it into B's equivalent. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A0,B0</td><td>ranges to be compared </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sizeA,sizeB</td><td>size of each range </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">[eq]</td><td>eq predicate used to compare the elements </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a87124e1ed63cceefb3aff4988ff8d9c6"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename fwdItA , typename fwdItB , typename predicate  = std::equal_to&lt; const typename fwdItA::reference &gt;&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int diffpp::difference </td>
+          <td>(</td>
+          <td class="paramtype">fwdItA&#160;</td>
+          <td class="paramname"><em>A0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">fwdItA&#160;</td>
+          <td class="paramname"><em>An</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">fwdItB&#160;</td>
+          <td class="paramname"><em>B0</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">fwdItB&#160;</td>
+          <td class="paramname"><em>Bm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">predicate&#160;</td>
+          <td class="paramname"><em>eq</em> = <code>predicate()</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Computes the difference between a range A and a range B. The difference between two ranges A and B represents the number of changes we need to make to the range A in order to transform it into B's equivalent. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">A0,B0,An,Bm</td><td>ranges [A0, An) and [B0, Bm) to be compared </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">[eq]</td><td>eq predicate used to compare the elements </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Oct 16 2013 23:32:26 for diffpp by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Oct 17 2013 23:19:29 for diffpp by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
