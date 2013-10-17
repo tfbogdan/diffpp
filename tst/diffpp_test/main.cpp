@@ -21,6 +21,7 @@ inline std::string print_diff_merge( const container_t &sln, const range_a &left
 
         int idxA = ~dir ? start.x : end.x;
         int idxB = ~dir ? start.y : end.y;
+        
 
         if ( ~dir ) {
             if ( comm == diffpp::edit::DELETE && idxA >= 0 ) {
@@ -74,15 +75,19 @@ inline std::string print_diff_merge( const container_t &sln, const range_a &left
 }
 
 int main() {
-
     typedef std::vector< diffpp::edit > sln_t;
 		std::string leftstr="ABCABBA";
 		std::string rightstr="CBABAC";
 
+
+    auto pred = [](const char &a, const char &b) { return a == b; };
+    // test diffpp::difference interface. a result different than 5 signals an error
+    int distance = diffpp::difference<std::string::iterator, std::string::iterator>(leftstr.begin(), leftstr.end(), rightstr.begin(), rightstr.end() );
+    if ( distance != 5 ) return -1;
+
     sln_t sln;
     sln_t slnb;
 
-    auto pred = [](const char &a, const char &b) { return a == b; };
     diffpp::algorithms::diff_greedyfwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), sln, pred);
     diffpp::algorithms::diff_greedybwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnb, pred );
 
