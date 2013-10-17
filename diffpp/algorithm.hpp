@@ -64,7 +64,38 @@ namespace diffpp {
 			typedef std::vector< kdmap_t > kdmap_container_t;
 
 
+      
+      struct forward_direction_policy {
+          static const int seek_direction = 1;
+          static inline int compute_direction( const int kline, 
+                                const int distance, 
+                                const int smaller_k_distance, 
+                                const int greater_k_distance,
+                                const int delta_ab ) {
+            return ( kline == distance * (-1) || kline != distance && smaller_k_distance < greater_k_distance ) ? -1 : 1; 
+          }
+          static bool at_end ( const int xpos, const int ypos, const int xmax, const int ymax ) { 
+            return xpos >= xmax && ypos >= ymax;
+          }
+      };
 
+      struct backward_direction_policy {
+          static const int seek_direction = -1;
+          static inline int compute_direction( const int kline, 
+                                const int distance, 
+                                const int smaller_k_distance, 
+                                const int greater_k_distance,
+                                const int delta_ab ) {
+            return ( kline == distance + delta_ab || ( kline != ((distance * -1) + delta_ab) && smaller_k_distance < greater_k_distance ) ) ? 1 : -1;
+          }
+          static bool at_end ( const int xpos, const int ypos, const int xmax, const int ymax ) { 
+            return xpos <= 0 && ypos <= 0;
+          }
+      };
+          
+
+
+      /*hack!*/
 			struct iterator_accessor { // experimental elacc_policy ( element access policy )
 				template < typename iter >
 				static void advance ( iter &it, int step ) { 
@@ -75,10 +106,17 @@ namespace diffpp {
 					return *it;
 				}
 			};
+      /*end of hack*/
 
 			template < typename direction_policy, typename elacc_policy > 
-			struct distance_seeker { 
-					
+			struct distance_seeker : public direction_policy, public elacc_policy { 
+			  
+        typedef direction_policy        direction_t;
+        typedef elacc_policy            element_access_t;
+
+        typedef distance_seeker< direction_t, element_access_t > type_t;
+
+
 				template < typename iterA, typename iterB, typename predicate >
 				int operator () ( iterA A0, 
 													const int countA, 
@@ -90,15 +128,16 @@ namespace diffpp {
 													const int dist_upper_k,
 													predicate eq  ) { // some stuff might throw. has to be moved away from ctor
 													// this hasn't been tested. not even compiled 
-					direction = direction_policy::direction( 
+					direction = direction_t::compute_direction( 
 								kline, 
 								distance, 
 								dist_lower_k,
-							  dist_upper_k );
+							  dist_upper_k,
+                countA-countB );
 
 					prev_kline = kline + direction * -1;
 					xend = prev_kline < kline ? dist_lower_k: dist_upper_k;
-					xend += direction == direction_policy::seek_direction? 1: 0;
+					xend += ( direction == direction_t::seek_direction );
 
 					yend = xend - kline;
 
@@ -106,12 +145,12 @@ namespace diffpp {
 					elacc_policy::advance(B0, yend);
 
 					while ( xend < countA && yend < countB && eq ( 
-														elacc_policy::dereference( A0 ), 
-														elacc_policy::dereference( B0 ) ) ) { 
-						xend += direction_policy::seek_direction;
-						yend += direction_policy::seek_direction;
-						elacc_policy::advance(A0, direction_policy::seek_direction);
-						elacc_policy::advance(B0, direction_policy::seek_direction);
+														element_access_t::dereference( A0 ), 
+														element_access_t::dereference( B0 ) ) ) { 
+						xend += direction_t::seek_direction;
+						yend += direction_t::seek_direction;
+						element_access_t::advance(A0, direction_t::seek_direction);
+						element_access_t::advance(B0, direction_t::seek_direction);
 					}
 					return xend;
 				}
@@ -125,6 +164,67 @@ namespace diffpp {
 				int direction;
 				int prev_kline;
 			};
+
+      /*hack! shall be seriously reconsidered*/
+      struct kdmap_stdmap { 
+        int distance_for_k ( const int kline ) const { 
+          if ( !map.count(kline) ) return kline;
+          return map.find(kline)->second;
+        }
+        void distance_for_k( const int kline, const int distance ) { 
+          map[kline] = distance;
+        }
+        void distance_snapshot( const int distance ) { 
+        }
+      protected:
+        std::map< int, int > map;
+      };
+      struct fwd_kdmap_stdmap : public kdmap_stdmap { 
+        void reset ( const int sizeA, const int sizeB ) {
+          map.clear();
+          map[1] = 0; 
+        };
+      };
+      struct bwd_kdmap_stdmap : public kdmap_stdmap { 
+        void reset ( const int sizeA, const int sizeB ) { 
+          map.clear();
+          map[sizeA - sizeB - 1] = sizeA;
+        }
+      };
+      /*end of hack*/
+      
+
+      template < typename direction_policy, typename element_access_policy, typename kdmap_policy >
+      struct shortest_distance_finder : public kdmap_policy { 
+        typedef direction_policy                                                    direction_t;
+        typedef element_access_policy                                               element_access_t;
+        typedef kdmap_policy                                                        kdmap_t;
+        typedef shortest_distance_finder< direction_t, element_access_t, kdmap_t >  type_t;
+        typedef distance_seeker< direction_t, element_access_t >                    seeker_t;
+
+        template < typename iterA, typename iterB, typename predicate > inline 
+        int operator() (  iterA A0,
+                          iterB B0, 
+                          const int sizeA,
+                          const int sizeB,
+                          predicate eq ) { 
+          kdmap_t::reset(sizeA, sizeB);
+          seeker_t seeker;
+          int distance(-1);
+          do {
+            const int distance_inverse = distance * -1;
+            int kline = distance_inverse + (sizeA - sizeB);
+            ++distance;
+            do {
+              const int dist_for_k = seeker(A0, sizeA, B0, sizeB, kline, distance, kdmap_t::distance_for_k( kline - 1), kdmap_t::distance_for_k( kline + 1), eq);
+              kdmap_t::distance_for_k(kline, dist_for_k);
+              kline += 2;
+            } while ( kline <= distance + (sizeA - sizeB) && !direction_t::at_end(seeker.get_xend(), seeker.get_yend(), sizeA, sizeB) );
+            kdmap_policy::distance_snapshot(distance);
+          } while ( distance<= sizeA + sizeB && !direction_t::at_end(seeker.get_xend(), seeker.get_yend(), sizeA, sizeB) );
+          return distance;
+        }
+      }; 
 
 			struct search_forward { 
 				template < typename fwdItA, typename fwdItB, typename predicate > inline
@@ -357,6 +457,40 @@ namespace diffpp {
 			diff_greedyfwd(A0,An,B0,Bm,sln,eq);	
 		}
 	}	//::diff::algorithms
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// @brief Computes the difference between a range A and a range B.
+  /// The difference between two ranges A and B represents the number of 
+  /// changes we need to make to the range A in order to transform it into B's equivalent
+  /// @param [in] A0, B0          ranges to be compared
+  /// @param [in] sizeA, sizeB    size of each range
+  /// @param [eq] eq              predicate used to compare the elements
+  template < typename fwdItA, typename fwdItB, typename predicate = std::equal_to<const typename fwdItA::reference > > inline
+  int difference ( fwdItA A0, fwdItB B0, const int sizeA, const int sizeB, predicate eq = predicate() ) {
+    typedef algorithms::detail::shortest_distance_finder< 
+        algorithms::detail::forward_direction_policy,
+        algorithms::detail::iterator_accessor, 
+        algorithms::detail::fwd_kdmap_stdmap > computer_type;
+    computer_type computer;
+    return computer(A0, B0, sizeA, sizeB, eq);
+  }
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /// @brief Computes the difference between a range A and a range B.
+  /// The difference between two ranges A and B represents the number of 
+  /// changes we need to make to the range A in order to transform it into B's equivalent
+  /// @param [in] A0, B0, An, Bm  ranges [A0, An) and [B0, Bm) to be compared
+  /// @param [eq] eq              predicate used to compare the elements
+  template < typename fwdItA, typename fwdItB, typename predicate = std::equal_to< const typename fwdItA::reference > > inline 
+  int difference ( fwdItA A0, fwdItA An, fwdItB B0, fwdItB Bm, predicate eq = predicate()) {
+    const int sizeA = std::distance(A0, An);
+    const int sizeB = std::distance(B0, Bm);
+    return diffpp::difference<fwdItA, fwdItB, predicate>(   static_cast<fwdItA>(A0), 
+                                                            static_cast<fwdItB>(B0), 
+                                                            static_cast<const int>(sizeA),
+                                                            static_cast<const int>(sizeB),
+                                                            static_cast<predicate>(eq) );
+  }
 
 } // ::diffpp
 
