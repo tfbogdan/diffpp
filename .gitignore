@@ -1,5 +1,7 @@
 tst/*
 !tst/diffpp_test/
 !tst/diffpp_test/main.cpp
+!tst/diffpp_test/makefile
 html/*
 doc/*
+.clang_complete
