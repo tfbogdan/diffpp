@@ -1,13 +1,47 @@
 #include <iostream>
-
-
-
 #include <string>
-
 #include <vector>
 
 #include <diffpp/diffpp.hpp>
 
+//////////////////////////////////////////////////////////////////////////////////////////
+/// all tests shall be contained in functions with the following signature: 
+typedef  bool(*test_function)();
+/// a test returns true on success, and false on failure
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/// test the difference between the strings "abcabba" and "cbabac". Expected result is 5.  
+bool test_difference_strings( void );
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+/// after definition, all test functions will be added to this array, for automated execution
+test_function tests[] = {
+  &test_difference_strings,   
+};
+
+
+
+bool test_difference_strings( void ) {
+  const std::string abcabba("abcabba");
+  const std::string cbabac("cbabac");
+
+  int result = diffpp::difference<std::string::const_iterator, std::string::const_iterator> ( abcabba.begin(), cbabac.begin(), static_cast<int>(abcabba.size()), static_cast<int>(cbabac.size()), std::equal_to<char>() );
+  if ( result != 5 ) return false;
+
+  result = diffpp::difference_bwd(abcabba.begin(), cbabac.begin(), abcabba.size(), cbabac.size(), std::equal_to<char>() );
+  if ( result != 5 ) return false;
+
+  
+  result = diffpp::difference(std::string::iterator(), cbabac.begin(), 0, static_cast<int>(cbabac.size()), std::equal_to<char>() );
+  
+
+  return result == cbabac.size();
+}
 
 template < typename container_t, typename range_a, typename range_b > 
 inline std::string print_diff_merge( const container_t &sln, const range_a &leftstr, const range_b &rightstr ) {
@@ -75,25 +109,22 @@ inline std::string print_diff_merge( const container_t &sln, const range_a &left
 }
 
 int main() {
-    typedef std::vector< diffpp::edit > sln_t;
-		std::string leftstr="ABCABBA";
-		std::string rightstr="CBABAC";
+  const unsigned test_count = sizeof(tests) / sizeof(test_function);
 
+  unsigned test_idx     = 0;
+  unsigned passed_tests = 0;
+  test_function test = tests[0];
 
-    auto pred = [](const char &a, const char &b) { return a == b; };
-    // test diffpp::difference interface. a result different than 5 signals an error
-    int distance = diffpp::difference<std::string::iterator, std::string::iterator>(leftstr.begin(), leftstr.end(), rightstr.begin(), rightstr.end() );
-    if ( distance != 5 ) return -1;
+  if ( test_count > 0 ) 
+    do {
+      bool test_result = (*test)();
+      std::cout<< "test " << test_idx << " of " << test_count << "  " << ( test_result ? std::string("[passed]") : std::string("[failed]") ) << std::endl;
+      passed_tests += test_result;
+      ++test_idx;
+    } while ( test_idx < test_count );
 
-    sln_t sln;
-    sln_t slnb;
+  std::cout << "Test done. Failed " << test_count - passed_tests << " out of " << test_count << std::endl;
 
-    diffpp::algorithms::diff_greedyfwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), sln, pred);
-    diffpp::algorithms::diff_greedybwd(std::begin(leftstr), std::end(leftstr), std::begin(rightstr), std::end(rightstr), slnb, pred );
-
-    if ( print_diff_merge(sln, leftstr, rightstr) != "ABCBABBAC" ) return -1;
-    if ( print_diff_merge(slnb,leftstr, rightstr) != "CABCABBAC" ) return -1;
-
-    return 0;
+  return ( test_count - passed_tests ) != 0;
 }
 

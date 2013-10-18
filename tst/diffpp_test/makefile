@@ -1,6 +1,6 @@
-CC=g++-4.8
+CC=g++
 CFLAGS=-c -std=c++11 -I../.. 
-CFLAGS_DEBUG=$(CFLAGS) -ggdb
+CFLAGS_DEBUG=$(CFLAGS) -ggdb -O0
 CFLAGS_RELEASE=$(CFLAGS) -O3
 SOURCES=main.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -23,7 +23,7 @@ main.o:
 	$(CC) $(CFLAGS_RELEASE) main.cpp -o release/main.o
 
 main.o.dbg:
-	$(CC) $(CFLAGS_DEBUG) main.cpp -o debug/main.o
+	$(CC) $(CFLAGS_DEBUG) main.cpp -o debug/main.o 
 
 test.out:
 	mkdir -p debug
