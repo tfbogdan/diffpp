@@ -77,6 +77,9 @@ namespace diffpp {
           static bool at_end ( const int xpos, const int ypos, const int xmax, const int ymax ) { 
             return xpos >= xmax && ypos >= ymax;
           }
+          static bool in_range ( const int coord, const int max_coord ) {
+            return coord < max_coord;
+          }
       };
 
       struct backward_direction_policy {
@@ -90,6 +93,9 @@ namespace diffpp {
           }
           static bool at_end ( const int xpos, const int ypos, const int xmax, const int ymax ) { 
             return xpos <= 0 && ypos <= 0;
+          }
+          static bool in_range ( const int coord, const int max_coord ) {
+            return coord > 0;
           }
       };
           
@@ -137,15 +143,19 @@ namespace diffpp {
                 delta_ab );
 
           prev_kline = kline + direction * -1;
-          xend = ( prev_kline > kline ? dist_upper_k: dist_lower_k ) + ( direction == direction_t::seek_direction );
+          xend = ( prev_kline > kline ? dist_upper_k: dist_lower_k ) ;
+          xend += ( direction == direction_t::seek_direction ) * direction_t::seek_direction;
           yend = xend - kline;
 
           elacc_policy::advance(A0, xend - ( direction_t::seek_direction == -1 ) );
           elacc_policy::advance(B0, yend - ( direction_t::seek_direction == -1 ) );
 
-          while ( xend < countA && yend < countB && eq ( 
+          while ( direction_t::in_range( xend, countA ) && 
+                  direction_t::in_range( yend, countB ) && 
+                  eq ( 
                             element_access_t::dereference( A0 ), 
-                            element_access_t::dereference( B0 ) ) ) { 
+                            element_access_t::dereference( B0 ) 
+                     ) ) { 
             xend += direction_t::seek_direction;
             yend += direction_t::seek_direction;
             element_access_t::advance(A0, direction_t::seek_direction);
