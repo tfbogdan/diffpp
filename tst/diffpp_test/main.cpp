@@ -29,18 +29,44 @@ test_function tests[] = {
 bool test_difference_strings( void ) {
   const std::string abcabba("abcabba");
   const std::string cbabac("cbabac");
-
-  int result = diffpp::difference<std::string::const_iterator, std::string::const_iterator> ( abcabba.begin(), cbabac.begin(), static_cast<int>(abcabba.size()), static_cast<int>(cbabac.size()), std::equal_to<char>() );
+  
+  /**/
+  int result = diffpp::difference( abcabba.begin(), cbabac.begin(), int(abcabba.size()), int(cbabac.size()), std::equal_to<char>() );
   if ( result != 5 ) return false;
 
   result = diffpp::difference_bwd(abcabba.begin(), cbabac.begin(), abcabba.size(), cbabac.size(), std::equal_to<char>() );
   if ( result != 5 ) return false;
 
   
-  result = diffpp::difference(std::string::iterator(), cbabac.begin(), 0, static_cast<int>(cbabac.size()), std::equal_to<char>() );
+  /* sizeB=0 */
+  result = diffpp::difference(std::string::iterator(), cbabac.begin(), 0, int(cbabac.size()), std::equal_to<char>() );
+  if ( result != cbabac.size() ) return false;
   
+  result = diffpp::difference_bwd(std::string::iterator(), cbabac.begin(), 0, int(cbabac.size()), std::equal_to<char>() );
+  if ( result != cbabac.size() ) return false;
 
-  return result == cbabac.size();
+  /* sizeA=0 */
+  result = diffpp::difference(abcabba.begin(), std::string::iterator(), int(abcabba.size()), 0, std::equal_to<char>() );
+  if ( result != abcabba.size() ) return false;
+  
+  result = diffpp::difference_bwd(abcabba.begin(), std::string::iterator(), int(abcabba.size()), 0, std::equal_to<char>() );
+  if ( result != abcabba.size() ) return false;
+
+  /* A == B */
+  result = diffpp::difference( abcabba.begin(), abcabba.begin(), int(abcabba.size()), int(abcabba.size()), std::equal_to<char>() );
+  if ( result != 0 ) return false;
+
+  result = diffpp::difference_bwd(abcabba.begin(), abcabba.begin(), abcabba.size(), abcabba.size(), std::equal_to<char>() );
+  if ( result != 0 ) return false;
+
+  /* N+M = 0 */
+  result = diffpp::difference( std::string::iterator(), std::string::iterator(), 0, 0, std::equal_to<char>() );
+  if ( result != 0 ) return false;
+
+  result = diffpp::difference_bwd(std::string::iterator(), std::string::iterator(), 0, 0, std::equal_to<char>() );
+  if ( result != 0 ) return false;
+
+  return true;
 }
 
 template < typename container_t, typename range_a, typename range_b > 
