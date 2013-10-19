@@ -1,4 +1,4 @@
-CC=g++
+CC=g++-4.8
 CFLAGS=-c -std=c++11 -I../.. 
 CFLAGS_DEBUG=$(CFLAGS) -ggdb -O0
 CFLAGS_RELEASE=$(CFLAGS) -O3
