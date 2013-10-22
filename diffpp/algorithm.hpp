@@ -80,6 +80,9 @@ namespace diffpp {
           static bool in_range ( const int coord, const int max_coord ) {
             return coord < max_coord;
           }
+          static int delta_ab ( const int sizeA, const int sizeB ) { 
+            return 0;
+          }
       };
 
       struct backward_direction_policy {
@@ -97,12 +100,15 @@ namespace diffpp {
           static bool in_range ( const int coord, const int max_coord ) {
             return coord > 0;
           }
+          static int delta_ab( const int sizeA, const int sizeB ) { 
+            return sizeA - sizeB;
+          }
       };
           
 
 
       /*hack!*/
-      struct iterator_accessor { // experimental elacc_policy ( element access policy )
+      struct iterator_accessor { // experimental iteration_policy ( element access policy )
         template < typename iter >
         static void advance ( iter &it, int step ) { 
           std::advance(it, step);
@@ -114,13 +120,17 @@ namespace diffpp {
       };
       /*end of hack*/
 
-      template < typename direction_policy, typename elacc_policy > 
-      struct distance_seeker : public direction_policy, public elacc_policy { 
+      template < typename direction_policy, typename iteration_policy > 
+      struct distance_seeker : public direction_policy, public iteration_policy { 
         
         typedef direction_policy        direction_t;
-        typedef elacc_policy            element_access_t;
+        typedef iteration_policy            element_access_t;
 
         typedef distance_seeker< direction_t, element_access_t > type_t;
+
+        explicit distance_seeker ( const direction_t &dir = direction_t(), const element_access_t &elacc = element_access_t() ) 
+          : direction_t(dir), 
+          element_access_t(elacc) {}
 
 
         template < typename iterA, typename iterB, typename predicate >
@@ -135,6 +145,7 @@ namespace diffpp {
                           const int delta_ab,
                           predicate eq  ) { // some stuff might throw. has to be moved away from ctor
                           // this hasn't been tested. not even compiled 
+          // determine movement direction, in terms of k-lines
           direction = direction_t::compute_direction( 
                 kline, 
                 distance, 
@@ -147,8 +158,8 @@ namespace diffpp {
           xend += ( direction == direction_t::seek_direction ) * direction_t::seek_direction;
           yend = xend - kline;
 
-          elacc_policy::advance(A0, xend - ( direction_t::seek_direction == -1 ) );
-          elacc_policy::advance(B0, yend - ( direction_t::seek_direction == -1 ) );
+          iteration_policy::advance(A0, xend - ( direction_t::seek_direction == -1 ) );
+          iteration_policy::advance(B0, yend - ( direction_t::seek_direction == -1 ) );
 
           while ( direction_t::in_range( xend, countA ) && 
                   direction_t::in_range( yend, countB ) && 
@@ -176,15 +187,19 @@ namespace diffpp {
 
       /*hack! shall be seriously reconsidered*/
       struct kdmap_stdmap { 
+        static int distance_for_k_for_map ( const std::map<int, int> &m, const int kline ) {
+          if ( !m.count(kline) ) return 0;
+          return m.find(kline)->second;
+        }
         int distance_for_k ( const int kline ) const { 
-          if ( !map.count(kline) ) return 0;
-          return map.find(kline)->second;
+          return distance_for_k_for_map( map, kline );
         }
         void distance_for_k( const int kline, const int distance ) { 
           map[kline] = distance;
         }
-        void distance_snapshot( const int distance ) { 
+        void distance_snapshot( const unsigned distance ) { 
         }
+        const std::map<int, int> &getmap(void) const { return map; }
       protected:
         std::map< int, int > map;
       };
@@ -200,16 +215,47 @@ namespace diffpp {
           map[sizeA - sizeB - 1] = sizeA;
         }
       };
+      template < typename direction_policy > 
+      struct monitored_kdmap_stdmap : public direction_policy { 
+        void distance_snapshot ( const unsigned distance ) { 
+          if ( distance < maps.size() ) {
+            maps[distance] = direction_policy::getmap();
+            return;
+          } else if ( distance == maps.size() ) { 
+            maps.push_back(direction_policy::getmap() );
+            return;  
+          } else maps.resize(distance+1);
+          maps[distance] = direction_policy::getmap();
+        }
+
+        int xend_for_dk ( const unsigned distance, const int kline ) const { 
+          if ( distance < maps.size() ) { 
+            return direction_policy::distance_for_k_for_map(maps[distance], kline);
+          }
+          return 0;
+        }
+
+        unsigned size(void) const { return maps.size(); } 
+      protected:
+        std::vector< std::map< int, int > > maps;
+      }; 
+
+      typedef monitored_kdmap_stdmap< fwd_kdmap_stdmap > fwd_monitored_kdmap_stdmap;
+      typedef monitored_kdmap_stdmap< bwd_kdmap_stdmap > bwd_monitored_kdmap_stdmap;
       /*end of hack*/
       
 
       template < typename direction_policy, typename element_access_policy, typename kdmap_policy >
-      struct shortest_distance_finder : public kdmap_policy { 
+      struct greedy_graph_walker : public kdmap_policy { 
         typedef direction_policy                                                    direction_t;
         typedef element_access_policy                                               element_access_t;
         typedef kdmap_policy                                                        kdmap_t;
-        typedef shortest_distance_finder< direction_t, element_access_t, kdmap_t >  type_t;
+        typedef greedy_graph_walker< direction_t, element_access_t, kdmap_t >  type_t;
         typedef distance_seeker< direction_t, element_access_t >                    seeker_t;
+
+
+        explicit greedy_graph_walker ( const kdmap_t &kdmap = kdmap_t() ) 
+          :kdmap_t(kdmap) {}
 
         template < typename iterA, typename iterB, typename predicate > inline 
         int operator() (  iterA A0,
@@ -219,7 +265,7 @@ namespace diffpp {
                           predicate eq ) { 
           kdmap_t::reset(sizeA, sizeB);
           seeker_t seeker;
-          const int delta_ab = ~direction_policy::seek_direction ? 0 : sizeA - sizeB;
+          const int delta_ab = direction_policy::delta_ab(sizeA,sizeB);
           int distance(-1);
           do {
             ++distance;
@@ -292,6 +338,87 @@ namespace diffpp {
 
           if ( end.x <= 0 && end.y <= 0 ) return true;
           return false;
+        }
+      };
+
+
+
+      template < typename direction_policy, typename command_interpreter >
+      struct shortest_path_walker : public command_interpreter { 
+        typedef direction_policy            direction_t;
+        typedef command_interpreter         interpreter_t;
+        typedef shortest_path_walker< direction_t, interpreter_t > type_t;
+
+        explicit shortest_path_walker ( const interpreter_t &interpreter = interpreter_t() ) 
+          :interpreter_t( interpreter ) {}
+
+        void operator() (   const int sizeA,
+                            const int sizeB, 
+                            const int distance, 
+                            const int kline, 
+                            const int dist_kline,       // kdmap[kline]
+                            const int dist_ppkline,     // kdmap[kline+1]
+                            const int dist_mmkline,
+                            const int delta_ab ) { // kdmap[kline-1]
+          const int distance_inverse(distance* -1);
+          
+          _xend = dist_kline;
+          _yend = _xend - kline;
+
+          _direction = direction_t::compute_direction(kline, distance, dist_mmkline, dist_ppkline, delta_ab);
+          
+          _prev_kline = kline + _direction * -1;
+
+          _xstart = ( _prev_kline < kline ? dist_mmkline : dist_ppkline );
+          _ystart = _xstart - _prev_kline;
+
+        }
+
+        int xstart(void) const { return _xstart;}
+        int ystart(void) const { return _ystart;}
+
+        int xend(void) const { return _xend;}
+        int yend(void) const { return _yend;}
+        
+        int direction(void) const { return _direction;}
+
+        unsigned matches(void) const { 
+          return std::abs( // todo: abstract away std::abs
+                      std::abs(_xend - _xstart) > std::abs(_yend - _ystart) ? 
+                      _ystart - _yend : 
+                      _xstart - _xend 
+                      );
+        }
+        bool erase(void) const { return (std::abs(_xend-_xstart) > std::abs(_yend-_ystart));}
+        bool insert(void) const { return !erase();}
+
+      private:
+        int _prev_kline;
+        int _direction;
+        int _xstart, _ystart, _xend, _yend;
+      };
+
+
+      template < typename direction_policy > 
+      struct dcountour_range_parser { 
+        typedef direction_policy direction_t;
+        template < typename dcontours_kdmaps, typename shortest_path_walker > 
+        void operator () (  const int sizeA, 
+                            const int sizeB,
+                            const dcontours_kdmaps &kdmaps,
+                            shortest_path_walker &generator ) { 
+          int xcurrent = sizeA;
+          int ycurrent = sizeB;
+          int distance = kdmaps.size()-1;
+          if ( xcurrent>0 || ycurrent>0 ) {// not generalized 
+            do {
+                const int kline = xcurrent - ycurrent;
+                generator(sizeA, sizeB, distance, kline, kdmaps.xend_for_dk(distance, kline), kdmaps.xend_for_dk(distance,kline+1),kdmaps.xend_for_dk(distance, kline-1), direction_t::delta_ab(sizeA, sizeB) );
+                xcurrent = generator.xend();
+                ycurrent = generator.yend();
+              --distance;
+            } while(xcurrent>0 || ycurrent>0 );
+          }
         }
       };
 
@@ -479,7 +606,7 @@ namespace diffpp {
   /// @param [eq] eq              predicate used to compare the elements
   template < typename fwdItA, typename fwdItB, typename predicate > inline
   int difference ( fwdItA A0, fwdItB B0, const int sizeA, const int sizeB, predicate eq = predicate() ) {
-    typedef algorithms::detail::shortest_distance_finder< 
+    typedef algorithms::detail::greedy_graph_walker< 
         algorithms::detail::forward_direction_policy,
         algorithms::detail::iterator_accessor, 
         algorithms::detail::fwd_kdmap_stdmap > computer_type;
@@ -496,7 +623,7 @@ namespace diffpp {
   /// @param [eq] eq              predicate used to compare the elements
   template < typename fwdItA, typename fwdItB, typename predicate > inline
   int difference_bwd ( fwdItA A0, fwdItB B0, const int sizeA, const int sizeB, predicate eq = predicate() ) {
-    typedef algorithms::detail::shortest_distance_finder< 
+    typedef algorithms::detail::greedy_graph_walker< 
         algorithms::detail::backward_direction_policy,
         algorithms::detail::iterator_accessor, 
         algorithms::detail::bwd_kdmap_stdmap > computer_type;
