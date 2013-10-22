@@ -121,14 +121,14 @@ namespace diffpp {
       /*end of hack*/
 
       template < typename direction_policy, typename iteration_policy > 
-      struct distance_seeker : public direction_policy, public iteration_policy { 
+      struct edge_walker : public direction_policy, public iteration_policy { 
         
         typedef direction_policy        direction_t;
         typedef iteration_policy            element_access_t;
 
-        typedef distance_seeker< direction_t, element_access_t > type_t;
+        typedef edge_walker< direction_t, element_access_t > type_t;
 
-        explicit distance_seeker ( const direction_t &dir = direction_t(), const element_access_t &elacc = element_access_t() ) 
+        explicit edge_walker ( const direction_t &dir = direction_t(), const element_access_t &elacc = element_access_t() ) 
           : direction_t(dir), 
           element_access_t(elacc) {}
 
@@ -251,7 +251,7 @@ namespace diffpp {
         typedef element_access_policy                                               element_access_t;
         typedef kdmap_policy                                                        kdmap_t;
         typedef greedy_graph_walker< direction_t, element_access_t, kdmap_t >  type_t;
-        typedef distance_seeker< direction_t, element_access_t >                    seeker_t;
+        typedef edge_walker< direction_t, element_access_t >                    seeker_t;
 
 
         explicit greedy_graph_walker ( const kdmap_t &kdmap = kdmap_t() ) 
@@ -344,22 +344,22 @@ namespace diffpp {
 
 
       template < typename direction_policy, typename command_interpreter >
-      struct shortest_path_walker : public command_interpreter { 
+      struct shortest_path_stepper : public command_interpreter { 
         typedef direction_policy            direction_t;
         typedef command_interpreter         interpreter_t;
-        typedef shortest_path_walker< direction_t, interpreter_t > type_t;
+        typedef shortest_path_stepper< direction_t, interpreter_t > type_t;
 
-        explicit shortest_path_walker ( const interpreter_t &interpreter = interpreter_t() ) 
+        explicit shortest_path_stepper ( const interpreter_t &interpreter = interpreter_t() ) 
           :interpreter_t( interpreter ) {}
 
         void operator() (   const int sizeA,
                             const int sizeB, 
                             const int distance, 
                             const int kline, 
-                            const int dist_kline,       // kdmap[kline]
-                            const int dist_ppkline,     // kdmap[kline+1]
-                            const int dist_mmkline,
-                            const int delta_ab ) { // kdmap[kline-1]
+                            const int dist_kline,        // kdmap[kline]
+                            const int dist_ppkline,      // kdmap[kline+1]
+                            const int dist_mmkline,      // kdmap[kline-1]
+                            const int delta_ab ) { 
           const int distance_inverse(distance* -1);
           
           _xend = dist_kline;
@@ -400,13 +400,13 @@ namespace diffpp {
 
 
       template < typename direction_policy > 
-      struct dcountour_range_parser { 
+      struct shortest_path_walker { 
         typedef direction_policy direction_t;
-        template < typename dcontours_kdmaps, typename shortest_path_walker > 
+        template < typename dcontours_kdmaps, typename shortest_path_stepper > 
         void operator () (  const int sizeA, 
                             const int sizeB,
                             const dcontours_kdmaps &kdmaps,
-                            shortest_path_walker &generator ) { 
+                            shortest_path_stepper &generator ) { 
           int xcurrent = sizeA;
           int ycurrent = sizeB;
           int distance = kdmaps.size()-1;

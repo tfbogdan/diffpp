@@ -87,8 +87,8 @@ bool test_dcountour_parser( void ) {
   int difference = computer(abcabba.begin(), cbabac.begin(), abcabba.size(), cbabac.size(), std::equal_to<char>());
 
   struct dummy{};
-  diffpp::algorithms::detail::shortest_path_walker< diffpp::algorithms::detail::forward_direction_policy, dummy > gen;
-  diffpp::algorithms::detail::dcountour_range_parser<diffpp::algorithms::detail::forward_direction_policy> parser;
+  diffpp::algorithms::detail::shortest_path_stepper< diffpp::algorithms::detail::forward_direction_policy, dummy > gen;
+  diffpp::algorithms::detail::shortest_path_walker<diffpp::algorithms::detail::forward_direction_policy> parser;
   parser( abcabba.size(), cbabac.size(), computer, gen );
 
   return true;
