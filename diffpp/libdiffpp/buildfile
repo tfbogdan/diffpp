@@ -1,0 +1,37 @@
+int_libs = # Interface dependencies.
+imp_libs = # Implementation dependencies.
+#import imp_libs += libhello%lib{hello}
+
+lib{diffpp}: {hxx}{** -version} hxx{version} $imp_libs $int_libs
+
+# Include the generated version header into the distribution (so that we don't
+# pick up an installed one) and don't remove it when cleaning in src (so that
+# clean results in a state identical to distributed).
+#
+hxx{version}: in{version} $src_root/manifest
+hxx{version}:
+{
+  dist  = true
+  clean = ($src_root != $out_root)
+}
+
+# Build options.
+#
+cxx.poptions =+ "-I$out_root" "-I$src_root"
+
+# Export options.
+#
+lib{diffpp}:
+{
+  cxx.export.poptions = "-I$out_root" "-I$src_root"
+  cxx.export.libs = $int_libs
+}
+
+# Install into the libdiffpp/ subdirectory of, say, /usr/include/
+# recreating subdirectories.
+#
+{hxx}{*}:
+{
+  install         = include/libdiffpp/
+  install.subdirs = true
+}

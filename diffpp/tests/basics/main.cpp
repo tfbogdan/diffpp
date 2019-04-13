@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include <diffpp/diffpp.hpp>
+#include <libdiffpp/diffpp.hpp>
 
 //////////////////////////////////////////////////////////////////////////////////////////
 /// all tests shall be contained in functions with the following signature: 

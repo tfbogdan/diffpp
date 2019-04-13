@@ -1,0 +1,6 @@
+$out_root/
+{
+  include libdiffpp/
+}
+
+export $out_root/libdiffpp/$import.target
