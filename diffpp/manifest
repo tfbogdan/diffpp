@@ -1,6 +1,6 @@
 : 1
 name: libdiffpp
-version: 0.1.0-a.0.z
+version: 0.1.0
 project: diffpp
 summary: diffpp library
 license: TODO
