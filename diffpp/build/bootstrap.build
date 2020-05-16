@@ -1,7 +1,0 @@
-project = libdiffpp
-
-using version
-using config
-using test
-using install
-using dist

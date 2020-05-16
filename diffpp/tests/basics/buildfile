@@ -1,3 +1,0 @@
-import libs = libdiffpp%lib{diffpp}
-
-exe{test}: {cxx}{**} $libs testscript{**}
